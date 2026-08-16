@@ -33,6 +33,10 @@ func main() {
 	commands.Register("login", config.HandlerLogin)
 	// Register a halder function for the register command.
 	commands.Register("register", config.HandlerRegister)
+	// Register a handler function for the reset command.
+	commands.Register("reset", config.HandlerReset)
+	// Register a handler function for the getusers command.
+	commands.Register("users", config.HandlerGetUsers)
 
 	// Use os.Args to get the command-line arguments passed in by the user
 	args := os.Args
@@ -75,11 +79,11 @@ func main() {
 
 	// Read the full contents of the json file and print
 	// the full contents of the json file.
-	updatedCfg, err := config.ReadConfig()
-	if err != nil {
-		fmt.Println("Error reading updated config:", err)
-		return
-	}
-	fmt.Println("Verified Updated User Name:", updatedCfg.CurrentUserName)
+	//updatedCfg, err := config.ReadConfig()
+	//if err != nil {
+	//fmt.Println("Error reading updated config:", err)
+	//return
+	//}
+	//fmt.Println("Verified Updated User Name:", updatedCfg.CurrentUserName)
 
 }

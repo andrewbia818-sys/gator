@@ -115,3 +115,41 @@ func HandlerRegister(s *State, cmd Command) error {
 	fmt.Printf("User created: %s\n", newUser.Name)
 	return nil
 }
+
+// Create a reset handler function and register it with the commands.
+// If reset fails, exit with an error code 1 and print an error message to the console.
+// If reset succeeds, print a success message to the console.
+func HandlerReset(s *State, cmd Command) error {
+	// Call the ResetUsers method from the database package to delete all users.
+	err := s.DB.ResetUsers(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed to reset users: %v", err)
+	}
+
+	fmt.Println("All users have been reset.")
+	return nil
+}
+
+// Create a GetUsers handler function and register it with the commands.
+// This function will retrieve all users from the database and print their
+// names to the console.
+// The name of the current user will be appended with (current).
+func HandlerGetUsers(s *State, cmd Command) error {
+	users, err := s.DB.GetUsers(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed to get users: %v", err)
+	}
+
+	current := s.Config.CurrentUserName
+
+	fmt.Println("Users:")
+	for _, name := range users {
+		if name == current {
+			fmt.Printf("- %s (current)\n", name)
+		} else {
+			fmt.Printf("- %s\n", name)
+		}
+	}
+
+	return nil
+}
