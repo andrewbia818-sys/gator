@@ -153,3 +153,21 @@ func HandlerGetUsers(s *State, cmd Command) error {
 
 	return nil
 }
+
+// Create a agg handler function . agg command. It should fetch the feed found
+// at https://www.wagslane.dev/index.xml and print the entire struct to the console
+// and ensure that the parsing works. If not, print an error message to the console and exit with an error code 1.
+func HandlerAgg(s *State, cmd Command) error {
+	feedURL := "https://www.wagslane.dev/index.xml"
+	rssFeed, err := FetchFeed(context.Background(), feedURL)
+	if err != nil {
+		return fmt.Errorf("failed to fetch and parse RSS feed: %v", err)
+	}
+
+	fmt.Printf("RSS Feed:\nTitle: %s\nLink: %s\nDescription: %s\n", rssFeed.Channel.Title, rssFeed.Channel.Link, rssFeed.Channel.Description)
+	for _, item := range rssFeed.Channel.Item {
+		fmt.Printf("\nItem:\nTitle: %s\nLink: %s\nDescription: %s\nPubDate: %s\n", item.Title, item.Link, item.Description, item.PubDate)
+	}
+
+	return nil
+}

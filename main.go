@@ -37,6 +37,8 @@ func main() {
 	commands.Register("reset", config.HandlerReset)
 	// Register a handler function for the getusers command.
 	commands.Register("users", config.HandlerGetUsers)
+	// Register a handler function for the agg command.
+	commands.Register("agg", config.HandlerAgg)
 
 	// Use os.Args to get the command-line arguments passed in by the user
 	args := os.Args
