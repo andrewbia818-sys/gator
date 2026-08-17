@@ -85,7 +85,7 @@ func HandlerRegister(s *State, cmd Command) error {
 
 	username := cmd.Args[0]
 
-	// Check if the user already exists in the database.
+	// Check if the user already exists
 	_, err := s.DB.GetUserByName(context.Background(), username)
 	if err == nil {
 		return fmt.Errorf("user with name '%s' already exists", username)
@@ -94,8 +94,8 @@ func HandlerRegister(s *State, cmd Command) error {
 		return fmt.Errorf("failed to check if user exists: %v", err)
 	}
 
-	// Create a new user in the database.
-	newUser, err := s.DB.CreateUser(context.Background(), database.CreateUserParams{
+	// Create the new user
+	_, err = s.DB.CreateUser(context.Background(), database.CreateUserParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -105,14 +105,12 @@ func HandlerRegister(s *State, cmd Command) error {
 		return fmt.Errorf("failed to create user: %v", err)
 	}
 
-	// Set the current user in the config to the given name
-	// Exit with code 1 if a user with that name already exists.
+	// Log the user in immediately
 	if err := SetUser(s.Config, username); err != nil {
 		return fmt.Errorf("failed to set user in config: %v", err)
 	}
-	//Print a message that the user was created, and log the user's
-	// data to the console for your own debugging.
-	fmt.Printf("User created: %s\n", newUser.Name)
+
+	fmt.Printf("%s has been registered and is now logged in\n", username)
 	return nil
 }
 

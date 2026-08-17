@@ -39,6 +39,10 @@ func main() {
 	commands.Register("users", config.HandlerGetUsers)
 	// Register a handler function for the agg command.
 	commands.Register("agg", config.HandlerAgg)
+	// Register a handler function for the addfeed command.
+	commands.Register("addfeed", config.HandlerAddFeed)
+	// Register a handler function for the feeds command.
+	commands.Register("feeds", config.HandlerGetFeeds)
 
 	// Use os.Args to get the command-line arguments passed in by the user
 	args := os.Args
