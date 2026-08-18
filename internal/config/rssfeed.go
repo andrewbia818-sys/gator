@@ -74,10 +74,11 @@ func HandlerAddFeed(s *State, cmd Command) error {
 
 	now := time.Now()
 
+	// Create the feed
 	feed, err := s.DB.CreateFeed(context.Background(), database.CreateFeedParams{
-		ID:        uuid.New(), // REQUIRED
-		CreatedAt: now,        // REQUIRED
-		UpdatedAt: now,        // REQUIRED
+		ID:        uuid.New(),
+		CreatedAt: now,
+		UpdatedAt: now,
 		Name:      name,
 		Url:       url,
 		UserID: uuid.NullUUID{
@@ -89,7 +90,27 @@ func HandlerAddFeed(s *State, cmd Command) error {
 		return fmt.Errorf("failed to create feed: %v", err)
 	}
 
-	fmt.Printf("%s has been added (URL: %s)\n", feed.Name, feed.Url)
+	// Create the feed_follow record
+	_, err = s.DB.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: now,
+		UpdatedAt: now,
+		UserID: uuid.NullUUID{
+			UUID:  currentUser.ID,
+			Valid: true,
+		},
+		FeedID: uuid.NullUUID{
+			UUID:  feed.ID,
+			Valid: true,
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create feed follow: %v", err)
+	}
+
+	fmt.Printf("%s added feed %s (URL: %s) and is now following it\n",
+		currentUser.Name, feed.Name, feed.Url)
+
 	return nil
 }
 

@@ -43,6 +43,10 @@ func main() {
 	commands.Register("addfeed", config.HandlerAddFeed)
 	// Register a handler function for the feeds command.
 	commands.Register("feeds", config.HandlerGetFeeds)
+	// Register a handler function for the follow command.
+	commands.Register("follow", config.HandlerFollow)
+	// Register a handler function for the following command.
+	commands.Register("following", config.HandlerGetFollowing)
 
 	// Use os.Args to get the command-line arguments passed in by the user
 	args := os.Args
