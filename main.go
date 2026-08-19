@@ -39,14 +39,16 @@ func main() {
 	commands.Register("users", config.HandlerGetUsers)
 	// Register a handler function for the agg command.
 	commands.Register("agg", config.HandlerAgg)
-	// Register a handler function for the addfeed command.
-	commands.Register("addfeed", config.HandlerAddFeed)
 	// Register a handler function for the feeds command.
 	commands.Register("feeds", config.HandlerGetFeeds)
 	// Register a handler function for the follow command.
-	commands.Register("follow", config.HandlerFollow)
+	commands.Register("follow", config.MiddlewareLoggedIn(config.HandlerFollow))
 	// Register a handler function for the following command.
-	commands.Register("following", config.HandlerGetFollowing)
+	commands.Register("following", config.MiddlewareLoggedIn(config.HandlerGetFollowing))
+	// Register a handler function for "addfeed" using the middlewareLoggenIn function
+	commands.Register("addfeed", config.MiddlewareLoggedIn(config.HandlerAddFeed))
+	// Register a handler function for "unfollow" using the middlewareLoggedIn function
+	commands.Register("unfollow", config.MiddlewareLoggedIn(config.HandlerUnfollow))
 
 	// Use os.Args to get the command-line arguments passed in by the user
 	args := os.Args

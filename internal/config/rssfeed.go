@@ -55,26 +55,17 @@ func FetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
 	return &rss, nil
 }
 
-// Create a new command called addfeed. It takes two args: name: The name
-// of the feed and url: The URL of the feed
-// At the top of the handler, get the current user from the database
-// and connect the feed to that user.
-func HandlerAddFeed(s *State, cmd Command) error {
+// HandlerAddFeed takes a single name and url, creates a new feed record
+// and a new feed follow record for the current user.
+func HandlerAddFeed(s *State, cmd Command, user database.User) error {
 	if len(cmd.Args) < 2 {
 		return fmt.Errorf("usage: addfeed <name> <url>")
 	}
 
 	name := cmd.Args[0]
 	url := cmd.Args[1]
-
-	currentUser, err := s.DB.GetUserByName(context.Background(), s.Config.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("failed to get current user: %v", err)
-	}
-
 	now := time.Now()
 
-	// Create the feed
 	feed, err := s.DB.CreateFeed(context.Background(), database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: now,
@@ -82,7 +73,7 @@ func HandlerAddFeed(s *State, cmd Command) error {
 		Name:      name,
 		Url:       url,
 		UserID: uuid.NullUUID{
-			UUID:  currentUser.ID,
+			UUID:  user.ID,
 			Valid: true,
 		},
 	})
@@ -90,27 +81,18 @@ func HandlerAddFeed(s *State, cmd Command) error {
 		return fmt.Errorf("failed to create feed: %v", err)
 	}
 
-	// Create the feed_follow record
 	_, err = s.DB.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
 		ID:        uuid.New(),
 		CreatedAt: now,
 		UpdatedAt: now,
-		UserID: uuid.NullUUID{
-			UUID:  currentUser.ID,
-			Valid: true,
-		},
-		FeedID: uuid.NullUUID{
-			UUID:  feed.ID,
-			Valid: true,
-		},
+		UserID:    uuid.NullUUID{UUID: user.ID, Valid: true},
+		FeedID:    uuid.NullUUID{UUID: feed.ID, Valid: true},
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create feed follow: %v", err)
 	}
 
-	fmt.Printf("%s added feed %s (URL: %s) and is now following it\n",
-		currentUser.Name, feed.Name, feed.Url)
-
+	fmt.Printf("%s added feed %s and is now following it\n", user.Name, feed.Name)
 	return nil
 }
 
