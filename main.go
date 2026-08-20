@@ -88,14 +88,4 @@ func main() {
 		fmt.Println("Error running command:", err)
 		os.Exit(1)
 	}
-
-	// Read the full contents of the json file and print
-	// the full contents of the json file.
-	//updatedCfg, err := config.ReadConfig()
-	//if err != nil {
-	//fmt.Println("Error reading updated config:", err)
-	//return
-	//}
-	//fmt.Println("Verified Updated User Name:", updatedCfg.CurrentUserName)
-
 }

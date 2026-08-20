@@ -123,3 +123,28 @@ func HandlerGetFeeds(s *State, cmd Command) error {
 
 	return nil
 }
+
+// Add a function scrapefeeds. It should Get the next feed to fetch from the DB.
+// timestamp of last_fetched_at should be NULL or older than 1 hour.
+func ScrapeFeeds(s *State) error {
+	feed, err := s.DB.GetNextFeedToFetch(context.Background())
+	if err != nil {
+		return fmt.Errorf("failed to get next feed to fetch: %v", err)
+	}
+
+	rssFeed, err := FetchFeed(context.Background(), feed.Url)
+	if err != nil {
+		return fmt.Errorf("failed to fetch feed: %v", err)
+	}
+
+	fmt.Printf("Fetched feed: %s\n", rssFeed.Channel.Title)
+	for _, item := range rssFeed.Channel.Item {
+		fmt.Printf("- %s\n", item.Title)
+	}
+
+	err = s.DB.MarkFeedFetched(context.Background(), feed.ID)
+	if err != nil {
+		return fmt.Errorf("failed to mark feed as fetched: %v", err)
+	}
+	return nil
+}
