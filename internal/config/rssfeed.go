@@ -2,11 +2,14 @@ package config
 
 import (
 	"context"
+	"database/sql"
 	"encoding/xml"
 	"fmt"
 	"gator/internal/database"
 	"io/ioutil"
 	"net/http"
+	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,6 +31,7 @@ type RSSItem struct {
 	Link        string `xml:"link"`
 	Description string `xml:"description"`
 	PubDate     string `xml:"pubDate"`
+	Guid        string `xml:"guid"`
 }
 
 // FetchRSSFeed fetches and parses the RSS feed from the given URL
@@ -124,6 +128,15 @@ func HandlerGetFeeds(s *State, cmd Command) error {
 	return nil
 }
 
+// Helper function to extract the first URL from a string.
+// It uses a regular expression to find the first occurrence
+// of a URL in the string and returns it. If no URL is found,
+// it returns an empty string.
+func urlFromDescription(desc string) string {
+	re := regexp.MustCompile(`https?://[^\s"'>]+`)
+	return re.FindString(desc)
+}
+
 // Add a function scrapefeeds. It should Get the next feed to fetch from the DB.
 // timestamp of last_fetched_at should be NULL or older than 1 hour.
 func ScrapeFeeds(s *State) error {
@@ -137,14 +150,73 @@ func ScrapeFeeds(s *State) error {
 		return fmt.Errorf("failed to fetch feed: %v", err)
 	}
 
-	fmt.Printf("Fetched feed: %s\n", rssFeed.Channel.Title)
 	for _, item := range rssFeed.Channel.Item {
-		fmt.Printf("- %s\n", item.Title)
+		url := item.Link
+		if url == "" {
+			url = item.Guid
+		}
+		if url == "" {
+			fmt.Printf("Skipping item with no URL: %s\n", item.Title)
+			continue
+		}
+		// fmt.Printf("Post created for feed '%v' '%v' '%v'\n", feed.Name, item.Title, item.Description)
+
+		// Deduplication check
+		_, err := s.DB.GetPostByURL(context.Background(), url)
+		if err == nil {
+			// Post already exists
+			continue
+		}
+
+		// Only insert if not found
+		_, err = s.DB.CreatePost(context.Background(), database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+			Title:       item.Title,
+			Description: sql.NullString{String: item.Description, Valid: item.Description != ""},
+			Url:         url,
+			FeedID:      feed.ID,
+		})
+		if err != nil {
+			return fmt.Errorf("failed to create post for feed '%s': %v", feed.Name, err)
+		}
+
+		fmt.Printf("Post created for feed '%v' '%v' '%v'\n", feed.Name, item.Title, item.Description)
+	}
+	return nil
+}
+
+// Add a function HandlerBrowsePosts. It should take a limit with a default
+// value of 2 as an argument and fetch the posts from the database for the cucrent user.
+func HandlerBrowsePosts(s *State, cmd Command, user database.User) error {
+	// Default limit
+	limit := 2
+
+	// Optional argument
+	if len(cmd.Args) > 0 {
+		n, err := strconv.Atoi(cmd.Args[0])
+		if err != nil || n <= 0 {
+			return fmt.Errorf("invalid limit: %s", cmd.Args[0])
+		}
+		limit = n
 	}
 
-	err = s.DB.MarkFeedFetched(context.Background(), feed.ID)
+	// Fetch posts for the current user
+	posts, err := s.DB.GetPostsForUser(context.Background(), database.GetPostsForUserParams{
+		UserID: uuid.NullUUID{UUID: user.ID, Valid: true},
+		Limit:  int32(limit),
+	})
 	if err != nil {
-		return fmt.Errorf("failed to mark feed as fetched: %v", err)
+		return fmt.Errorf("failed to get posts: %v", err)
 	}
+
+	fmt.Printf("Showing %d most recent posts for user '%s':\n\n", limit, user.Name)
+
+	for _, post := range posts {
+		fmt.Printf("Title: %s\n", post.Title)
+		fmt.Printf("Content: %s\n\n", post.Description.String)
+	}
+
 	return nil
 }

@@ -39,6 +39,8 @@ func main() {
 	commands.Register("users", config.HandlerGetUsers)
 	// Register a handler function for the agg command.
 	commands.Register("agg", config.HandlerAgg)
+	// Register a handler function for the browse command.
+	commands.Register("browse", config.MiddlewareLoggedIn(config.HandlerBrowsePosts))
 	// Register a handler function for the feeds command.
 	commands.Register("feeds", config.HandlerGetFeeds)
 	// Register a handler function for the follow command.

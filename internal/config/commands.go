@@ -148,62 +148,9 @@ func HandlerGetUsers(s *State, cmd Command) error {
 			fmt.Printf("- %s\n", name)
 		}
 	}
-
 	return nil
 }
 
-// Create a agg handler function . agg command.
-// Update the agg command handler function signature to now take a single
-// argument: time_between_reqs set to 5s. Use the time.ParseDuration
-// function to parse it into a time.Duration value.
-// Print a message "Collecting feeds every <time.Duration>" when it starts.
-// Use a time.Ticker to run the scrapeFeeds function once every time_between_reqs.
-// Use a for loop to ensure that it runs immediately  and then every time the ticker ticks:
-//func HandlerAgg(s *State, cmd Command) error {
-//	if len(cmd.Args) != 1 {
-//		return fmt.Errorf("invalid number of arguments for agg command")
-//	}
-//	timeBetweenReq := cmd.Args[0]
-
-//	duration, err := time.ParseDuration(timeBetweenReq)
-//	if err != nil {
-//		return fmt.Errorf("failed to parse time between requests: %v", err)
-//	}
-//	// NEW CODE BELOW
-//	fmt.Printf("Collecting feeds every %v\n", duration)
-
-//	ticker := time.NewTicker(duration)
-//	defer ticker.Stop()
-
-// Run immediately, then once per tick
-
-// ...existing code...
-//for {
-//    feedURL := ScrapeFeeds(s)
-//    if err != nil {
-//        fmt.Printf("failed to scrape feeds: %v\n", err)
-//        <-ticker.C
-//        continue
-//    }
-
-//    rssFeed, err := FetchFeed(context.Background(), feedURL)
-//    if err != nil {
-//        fmt.Printf("failed to fetch and parse RSS feed: %v\n", err)
-//        <-ticker.C
-//        continue
-//    }
-
-//    fmt.Printf("RSS Feed:\nTitle: %s\nLink: %s\nDescription: %s\n", rssFeed.Channel.Title, rssFeed.Channel.Link, rssFeed.Channel.Description)
-//    for _, item := range rssFeed.Channel.Item {
-//        fmt.Printf("\nItem:\nTitle: %s\nLink: %s\nDescription: %s\nPubDate: %s\n", item.Title, item.Link, item.Description, item.PubDate)
-//    }
-
-//	   <-ticker.C
-//			return nil
-//		}
-//	}
-//
-// OLD CODE ABOVE NEW BELOW
 func HandlerAgg(s *State, cmd Command) error {
 	if len(cmd.Args) != 1 {
 		return fmt.Errorf("invalid number of arguments for agg command")
