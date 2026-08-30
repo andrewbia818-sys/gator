@@ -2,7 +2,7 @@
 
  Gator is a boot.dev project intended to practice using go coding and the postgres sql database.
 ## What Gator does:
-```Gator is short for Aggregator. It aggregates items from RSS Feeds. Users who register with the program, set up RSS feeds by loading the URLs into the database and telling Gator to scrape the feeds for new items. Users can then browse the items in the database. 
+```Gator is short for Aggregator. It aggregates items from RSS Feeds. Users who register with the program, set up RSS feeds by loading the URLs into the database and telling Gator to scrape the feeds for new items. Users can then browse the items in the database.``` 
 
 ### To compile gator 
 '''you will first need to install the go programming language from the official go site - download and install go. You will then need to install postgreSQL, go to the official postgreSQL download page. You can then compile the go code from your repo by running > go build. This will create a binary file gator'''
